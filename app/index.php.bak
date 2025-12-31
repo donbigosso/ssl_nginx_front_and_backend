@@ -1,0 +1,3 @@
+<?php
+echo "<h1>Hello from PHP on Raspberry Pi!</h1>" 
+?>
