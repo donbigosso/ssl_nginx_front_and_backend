@@ -10,8 +10,8 @@ mysql-data/
 db-data/
 
 # PHP
-app/uploads/*
-!app/uploads/.gitkeep
+app/backend/uploads/*
+!app/backend/uploads/.gitkeep
 
 #certs
 certs/*
