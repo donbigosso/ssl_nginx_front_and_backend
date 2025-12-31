@@ -14,7 +14,7 @@ app/uploads/*
 !app/uploads/.gitkeep
 
 #certs
-certs/
+certs/*
 !certs/.gitkeep
 
 vendor/
