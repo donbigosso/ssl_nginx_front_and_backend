@@ -1,5 +1,5 @@
 {
-  "api_address": "./backend/api_engine.php",
+  "api_address": "https://donbigosso.polafri.pl/backend/api_engine.php",
   "api_key": "1Knd9t3zzjah87oA",
   "test_setting": "testololo_2030"
 }
