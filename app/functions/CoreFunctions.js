@@ -10,7 +10,8 @@ export function checkHTMLInstance (element){
 
 export async function getSetting(key) {
   try {
-    const response = await fetch("../settings.json");
+    const randomString = Math.random().toString(36).substring(2, 12);
+    const response = await fetch("../settings.json?nocache="+randomString);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

@@ -16,7 +16,7 @@ export async function generateDownloadLink(filename){
         return null;
     }
     const fileURL = `${apiAddress}?request=download&file=${encodeURIComponent(filename)}`;
-    console.log("Generated download link (DEB765):", fileURL);
+    console.log("Generated download link (DEB765): ", fileURL);
     return fileURL;  
 }
 

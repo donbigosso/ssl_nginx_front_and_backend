@@ -159,10 +159,8 @@ export function initializeTableButtons() {
     }
     else if (action === 'copy-link') {
       // handle copy link
-
-      generateAndCopyDownloadLink(fileName);
       const button = e.target.closest('button');
-  const feedback = button.querySelector('.copied-feedback');
+      const feedback = button.querySelector('.copied-feedback');
 
   generateAndCopyDownloadLink(fileName);
 
