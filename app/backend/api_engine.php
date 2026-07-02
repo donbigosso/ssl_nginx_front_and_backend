@@ -5,12 +5,14 @@
     include 'classes/db_access.php';
     include 'classes/api_methods.php';
     include 'classes/user_model.php';
-    include 'classes/api_request_handler.php';
+    include 'classes/file_model.php';
+    include 'classes/tailored_db_methods_2.php';
     $core = new Core();
     $db   = getenv('MYSQL_DATABASE');
     $user = getenv('MYSQL_USER');
     $pass = getenv('MYSQL_PASSWORD');
-    $db = new DatabaseAccess('mysql', $db, $user, $pass);
-    $api = new ApiMethods();
-    $api->processRequest($core); // This will handle everything and output JSON
+    $dba = new DatabaseAccess('mysql', $db, $user, $pass);
+    $api = new ApiMethods($dba);
+    $api->processRequest(); // This will handle everything and output JSON
+
 ?>

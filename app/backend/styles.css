@@ -1,0 +1,164 @@
+body {
+    background-color: #f5f8ff;  /*#f5f8ff */
+    min-height: 100vh;
+}
+
+/* stop shrinking width under 470 px */
+.container, .container-fluid, .header, .navbar, .admin_navbar {
+    min-width: 470px; /* Prevents shrinking below this width */
+}
+
+
+.navbar {
+    background: linear-gradient(to right, #0d6efd, #0a58ca) !important;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.08);
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+}
+
+.btn-warning:hover {
+    background-color: #ffca2c;
+    border-color: #ffc720;
+}
+
+.text-primary {
+    color: #0d6efd !important;
+}
+
+main {
+    padding-bottom: 3rem;
+}
+
+.logged-only { display: none; } /* when not logged in */
+
+
+/* Modal */
+#modal-alert-field {
+    display: none;
+}
+
+th {
+    position: relative;
+}
+
+.sort-icon {
+    font-size: 0.8rem;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+}
+
+th:hover .sort-icon {
+    opacity: 0.8;
+}
+
+/* File upload */
+
+#upload-alert-field {
+    display: none;
+}
+
+#upload-success-line {
+  display: none;   
+}
+/* Optional: active sort indicator (you can toggle these classes with JS later) */
+th.sort-asc .sort-icon::before {
+    content: "\f574"; /* bi-arrow-up */
+    opacity: 1;
+}
+
+th.sort-desc .sort-icon::before {
+    content: "\f575"; /* bi-arrow-down */
+    opacity: 1;
+}
+
+
+/* test fields */
+.test_field {display: block;}
+
+/* Table */
+button .bi,
+button .bi svg {
+    pointer-events: none;
+}
+
+#global-feedback {
+  transition: opacity 1.5s ease;
+  color: green;
+  pointer-events: none;
+  font-size: 1.1rem;
+  z-index: 10;
+}
+
+
+/* Big screen only class */
+@media (max-width: 780px) {
+    .big-screen-only {
+        display: none;
+    }
+}
+
+
+/*admin page */
+#admin_navbar {
+    background: linear-gradient(to right, #8B0000, #000000)!important;
+}
+
+
+.nice-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: monospace;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.nice-table thead {
+    background-color: #2c3e50;
+    color: #fff;
+}
+
+.nice-table th {
+    padding: 12px 16px;
+    text-align: left;
+    letter-spacing: 0.05em;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.nice-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    color: #333;
+}
+
+.nice-table tbody tr:nth-child(even) {
+    background-color: #f5f7fa;
+}
+
+.nice-table tbody tr:hover {
+    background-color: #eaf0fb;
+    transition: background-color 0.2s ease;
+}
+
+.nice-table tbody tr:last-child td {
+    border-bottom: none;
+}
