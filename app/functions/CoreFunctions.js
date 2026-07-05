@@ -11,7 +11,7 @@ export function checkHTMLInstance (element){
 export async function getSetting(key) {
   try {
     const randomString = Math.random().toString(36).substring(2, 12);
-    const response = await fetch("../settings.json?nocache="+randomString);
+    const response = await fetch("./settings.json?nocache="+randomString);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -117,6 +117,57 @@ export async function downloadFile(url, filename) {
   link.click();
   
   URL.revokeObjectURL(link.href); // cleanup
+}
+
+
+
+export async function POSTJSONRequest(params) {
+  const rawApiAddress = await getSetting("api_address");
+  if (!rawApiAddress) {
+    console.error("API address is not defined in settings.");
+    return null;
+  }
+
+  
+
+  try {
+    const response = await fetch(rawApiAddress, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(params)
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching POST data:", error.message);
+    return null;
+  }
+
+}
+
+export async function verifyUserByPassword (username, password) {
+  const params = {request: "verify_user_password", name: username, password: password}
+  const apiResponse = await POSTJSONRequest(params);
+  if (apiResponse.success=true){
+    // return apiResponse.data.password_verified;
+    return apiResponse;
+    
+  }
+
+  
+  
+
+  
+}
+
+export async function checkIfTokenExist(token){
+    const tokenTest = await POSTJSONRequest({request: "check_token_existence",token: token});
+    return tokenTest.success;
 }
 
 // Usage

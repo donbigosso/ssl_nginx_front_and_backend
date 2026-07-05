@@ -1,4 +1,5 @@
 import { checkHTMLInstance } from "./CoreFunctions.js";
+import { verifySession } from "./RequestFunctions.js";
 export function show(element, display = "inline-block") {
   if (!(element instanceof HTMLElement)) {
     console.warn("show(): invalid element");
@@ -29,10 +30,29 @@ export function hideModal(modalID) {
   modal.style.backgroundColor = '';
   document.body.style.overflow = '';
 }
+export function newHideModal(modalID) {
+  const modal = document.getElementById(modalID);
+  if (!modal) return;
+
+  // 1. blur FIRST — before Bootstrap does anything
+  if (document.activeElement && modal.contains(document.activeElement)) {
+    document.activeElement.blur();
+  }
+
+  // 2. now safe to hide
+  const bsModal = bootstrap.Modal.getInstance(modal);
+  if (bsModal) {
+    bsModal.hide();
+  }
+}
 
 export function showLoggedOnly(){
     const loggedIn = document.querySelectorAll(".logged-only");
-    loggedIn.forEach(el => show(el));}
+    loggedIn.forEach(el => {
+  //console.log(el);     // ← add this
+  show(el);
+});
+  }
 
 export function hideLoggedOnly(){
     const loggedIn = document.querySelectorAll(".logged-only");
@@ -75,3 +95,26 @@ export function changeInnerTextContent(element, textContent) {
     element.textContent = textContent;
     }
 }
+
+export function changeInnerHTML(element, htmlContent) {
+  if (checkHTMLInstance(element)) {
+    element.innerHTML = htmlContent;
+    }
+}
+
+export async function displayLoggedUser(){
+  const user =await verifySession();
+  const userField = document.getElementById("user-field");
+  if(!userField){
+    console.warn("DEB122  user field not found");
+    return;
+  }
+  if (user) {
+    // TODO: Display user information
+    userField.textContent = user;
+  }
+  else {
+    console.log("DEB 124 User is not logged in");
+    return;
+  }
+  }

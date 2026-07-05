@@ -32,17 +32,40 @@
 
             <div class="d-flex align-items-center gap-3">
                 <span class="text-light me-3 logged-only">
-                    <i class="bi bi-person-circle"></i>&nbsp;<strong>john.doe</strong>
+                    <i class="bi bi-person-circle"></i>&nbsp;<strong id="user-field">john.doe</strong>
                 </span>
-                <button class="btn btn-outline-light me-2 unlogged-only disabled"  id="login-btn">Login</button>
+                <button class="btn btn-outline-light me-2 unlogged-only"  id="login-btn">Login</button>
                 <button class="btn btn-outline-danger logged-only" id="logout-btn">Logout</button>
             </div>
         </div>
     </header>
 
     <main class="container mt-5">
+        <!-- File upload goes here -->
+        <div class="mb-4 logged-only">
+            <form id="upload-form">
+                <div class="mb-3">
+                    <label for="file-upload" class="form-label"><h2 class="mb-4 text-primary">Upload files (max 5)</h2></label>
+                    <input 
+                        type="file" 
+                        class="form-control" 
+                        id="file-upload" 
+                        name="files[]" 
+                        multiple
+                    >
+                </div>
+                <button type="submit" class="btn btn-primary" id="upload-btn">Upload</button>
+            </form>
+            <div id="upload-alert-field" class="alert alert-danger m-3 " role="alert">
+                This is a file upload error
+            </div>
+            <div id="upload-success-line" class="text-success mt-2">
+                Files selected:
+            </div>
+           
+        </div>
         <h2 class="mb-4 text-primary">Available Files</h2>
-<h3>Dev</h3>
+
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead class="table-light">
@@ -70,15 +93,15 @@
                  
                 </tbody>
             </table>
-            <div id="global-copy-feedback" class="position-fixed top-50 start-50 translate-middle bg-secondary text-white px-3 py-2 rounded shadow opacity-0" style="z-index: 1050; pointer-events: none;">
-                Link copied to clipboard!
+            <div id="global-feedback" class="position-fixed top-50 start-50 translate-middle bg-secondary text-white px-3 py-2 rounded shadow opacity-0" style="z-index: 1050; pointer-events: none;">
+                Global feedback
             </div>
         </div>
     </main>
 
     <!--Test field -->
     
-    <div class="container mt-5 test_field container">
+    <div class="container mt-5 test_field">
       <h2>
         Test Area
       </h2>

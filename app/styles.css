@@ -68,6 +68,15 @@ th:hover .sort-icon {
     opacity: 0.8;
 }
 
+/* File upload */
+
+#upload-alert-field {
+    display: none;
+}
+
+#upload-success-line {
+  display: none;   
+}
 /* Optional: active sort indicator (you can toggle these classes with JS later) */
 th.sort-asc .sort-icon::before {
     content: "\f574"; /* bi-arrow-up */
@@ -89,7 +98,7 @@ button .bi svg {
     pointer-events: none;
 }
 
-.copied-feedback {
+#global-feedback {
   transition: opacity 0.4s ease;
   pointer-events: none;
   font-size: 0.8rem;

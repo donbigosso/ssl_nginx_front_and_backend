@@ -1,32 +1,41 @@
 
 import { onClick } from "./functions/EventFunctions.js";
-import {modalClicks, showLoginModal} from "./functions/ModalFunctions.js";
 import { initializeTableSorting,  addFileListToTable, initializeTableButtons  } from "./functions/TableFunctions.js";
-import { showUnloggedOnly, hideLoggedOnly } from "./functions/PageAppearance.js";
+import { showLoginModal } from "./functions/NewModalMethods.js";
 import { getFileList } from "./functions/RequestFunctions.js";
+import { performTests } from "./functions/TestFunctions.js";
+import { handleAutoLogin, handleLogout } from "./functions/LoginFunctions.js";
+import {uploadFile} from "./functions/UploadFunctions.js";
 
 
-document.addEventListener('DOMContentLoaded', () => {
+
+
+document.addEventListener('DOMContentLoaded', () => {   
 
 (async () => {
   addFileListToTable(await getFileList());
+  handleAutoLogin();
+initializeTableSorting();
+initializeTableButtons();
+performTests();
 })()
 
 const loginButton = document.querySelector("#login-btn");
 const logoutButton = document.querySelector("#logout-btn");
 
 
+
 onClick(loginButton, () => {
-   showLoginModal();
+  showLoginModal();
   });
 
-  onClick(logoutButton, () => {
-    showUnloggedOnly();
-    hideLoggedOnly();
+  onClick(logoutButton, async() => {
+    handleLogout();
+
   });
 
-initializeTableSorting();
-initializeTableButtons();
+
+
 
 
 

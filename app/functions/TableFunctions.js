@@ -1,5 +1,7 @@
 //file table sorting
-import { downloadFileFromAPI, generateDownloadLink, generateAndCopyDownloadLink } from "./CustomFunctions.js";
+import { downloadFileFromAPI, showCopiedLinkFeedback, generateAndCopyDownloadLink } from "./CustomFunctions.js";
+import {handleFileRename, handleDeleteFile} from "./FileActionMethods.js";
+
 
 function sortTable(columnIndex, isNumeric = false, isDate = false) {
   const tbody = document.getElementById('file-table-body');
@@ -61,7 +63,8 @@ document.querySelectorAll('thead th').forEach((th, index) => {
 export function addRowToTable(fileName, fileSize, date) {
   const tableBody = document.getElementById('file-table-body');
   const newRow = document.createElement('tr');
-
+  //for name adjustment function after rename
+newRow.dataset.filename = fileName;
   const nextRowNumber = tableBody.querySelectorAll('tr').length + 1;
 
   newRow.innerHTML = `
@@ -74,8 +77,8 @@ export function addRowToTable(fileName, fileSize, date) {
       <button class="btn btn-sm btn-success me-1" data-action="copy-link"><i class="bi bi-link-45deg"></i>
         
       </button>
-      <button class="btn btn-sm btn-warning me-1 logged-only" data-action="rename">Rename</button>
-      <button class="btn btn-sm btn-danger logged-only" data-action="delete">Delete</button>
+      <button class="btn btn-sm btn-warning me-1 logged-only" data-action="rename"><i class="bi bi-pencil"></i></button>
+      <button class="btn btn-sm btn-danger logged-only" data-action="delete"><i class="bi bi-trash"></i></button>
     </td>
   `;
 
@@ -151,16 +154,21 @@ export function initializeTableButtons() {
       downloadFileFromAPI(fileName);
     } else if (action === 'rename') {
       // handle rename
-      console.log('Rename:', fileName);
+      handleFileRename(fileName);
+
     } else if (action === 'delete') {
       // handle delete - e.g., row.remove();
       console.log('Delete:', fileName);
-      row.remove();
+      handleDeleteFile(fileName);
+    /*  const deleteResponse = true; //this will come from external function basing on serer response
+      if(deleteResponse){
+        row.remove();
+    }*/
     }
     else if (action === 'copy-link') {
       // handle copy link
       const button = e.target.closest('button');
-      const feedback = button.querySelector('.copied-feedback');
+     
 
   generateAndCopyDownloadLink(fileName);
 
@@ -171,13 +179,3 @@ export function initializeTableButtons() {
 
 }
 
-function showCopiedLinkFeedback() {
-  const feedbackElement = document.getElementById('global-copy-feedback');
-  feedbackElement.classList.remove('opacity-0');
-  feedbackElement.classList.add('opacity-100');
-
-  setTimeout(() => {
-    feedbackElement.classList.remove('opacity-100');
-    feedbackElement.classList.add('opacity-0');
-  }, 1500);
-}
