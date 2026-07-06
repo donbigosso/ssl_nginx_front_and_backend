@@ -6,6 +6,7 @@ import { getFileList } from "./functions/RequestFunctions.js";
 import { performTests } from "./functions/TestFunctions.js";
 import { handleAutoLogin, handleLogout } from "./functions/LoginFunctions.js";
 import {uploadFile} from "./functions/UploadFunctions.js";
+import {initApiAddressCache} from "./functions/CustomFunctions.js";
 
 
 
@@ -15,9 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
 (async () => {
   addFileListToTable(await getFileList());
   handleAutoLogin();
-initializeTableSorting();
-initializeTableButtons();
-performTests();
+  initializeTableSorting();
+  initializeTableButtons();
+  performTests();
+  await initApiAddressCache();
 })()
 
 const loginButton = document.querySelector("#login-btn");

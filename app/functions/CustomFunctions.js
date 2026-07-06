@@ -1,8 +1,17 @@
 import { getSetting, downloadFile } from "./CoreFunctions.js";   
 import { getCookie } from "./CookieFunctions.js";
 
+let cachedApiAddress = null; // so that copy urs will not be async (does not work in Safari)
 
-export async function generateDownloadLink(filename){
+export async function initApiAddressCache(){
+    cachedApiAddress = await getSetting("api_address");
+    if (!cachedApiAddress) {
+        console.error("API address is not defined in settings.");
+    }
+   
+}
+
+export async function generateDownloadLinkOld(filename){
     const apiAddress = await getSetting("api_address");
     if (!apiAddress) {
         console.error("API address is not defined in settings.");
@@ -13,9 +22,17 @@ export async function generateDownloadLink(filename){
     return fileURL;  
 }
 
+export function generateDownloadLink(filename){
+    if (!cachedApiAddress) {
+        console.error("API address not cached yet.");
+        return null;
+    }
+    return `${cachedApiAddress}?request=download&file=${encodeURIComponent(filename)}`;
+}
+
 export async function downloadFileFromAPI(filename){
     
-    const apiAddress = await getSetting("api_address");
+   
     const fileLink = await generateDownloadLink(filename);
     if (!fileLink) {
         return;
@@ -23,22 +40,48 @@ export async function downloadFileFromAPI(filename){
     await downloadFile(fileLink, filename);  
 }
 
-export async function copyToClipboard(text) {
-    try {
-        await navigator.clipboard.writeText(text);
-      
+export function copyToClipboard(text) {
      
-    } catch (err) {
-        console.error('Failed to copy: ', err);
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).catch(err => {
+            console.error('Clipboard write failed: ', err);
+            fallbackCopy(text);
+        });
+    } else {
+        fallbackCopy(text);
     }
 }
 
+function fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try {
+        document.execCommand('copy');
+    } catch (err) {
+        console.error('Fallback copy failed: ', err);
+    }
+    document.body.removeChild(textarea);
+}
 
-export async function generateAndCopyDownloadLink(filename){
+
+export async function generateAndCopyDownloadLinkOld(filename){
     const link = await generateDownloadLink(filename);
     if (link) {
         await copyToClipboard(link);
         
+    }
+}
+
+export function generateAndCopyDownloadLink(filename){
+    const link = generateDownloadLink(filename);
+    if (link) {
+        copyToClipboard(link); // now fully synchronous up to this point
+        showCopiedLinkFeedback();
     }
 }
 
