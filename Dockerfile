@@ -11,3 +11,6 @@ COPY app/ /var/www/html/
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
+
+# Copy PHP upload configuration
+COPY php-uploads.ini /usr/local/etc/php/conf.d/uploads.ini
