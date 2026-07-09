@@ -13,6 +13,9 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       API_KEYS: ${API_KEYS}
       APP_SECRET: ${APP_SECRET}
+      UPLOAD_MAX_FILES: ${UPLOAD_MAX_FILES}
+      UPLOAD_ALLOWED_EXTENSIONS: ${UPLOAD_ALLOWED_EXTENSIONS}   
+      UPLOAD_MAX_SIZE_MB: ${UPLOAD_MAX_SIZE_MB}
     volumes:
       - ./app:/var/www/html
     depends_on:
