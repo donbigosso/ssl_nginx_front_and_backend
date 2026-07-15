@@ -6,7 +6,8 @@ import { getFileList } from "./functions/RequestFunctions.js";
 import { performTests } from "./functions/TestFunctions.js";
 import { handleAutoLogin, handleLogout } from "./functions/LoginFunctions.js";
 import {uploadFile} from "./functions/UploadFunctions.js";
-import {initApiAddressCache} from "./functions/CustomFunctions.js";
+import {initApiAddressCache, initFileSettingsCache} from "./functions/CustomFunctions.js";
+
 
 
 
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeTableButtons();
   performTests();
   await initApiAddressCache();
+  await initFileSettingsCache();
 })()
 
 const loginButton = document.querySelector("#login-btn");

@@ -84,10 +84,16 @@ export function changeButtonText(button, text) {
   button.textContent = text;
 }
 
-export function changeButtonStyle(button) {
- if(checkHTMLInstance(button)){
+export function disableButton(button) {
+  if (checkHTMLInstance(button)) {
+    button.disabled = true;
+  }
+}
 
- }
+export function enableButton(button) {
+  if (checkHTMLInstance(button)) {
+    button.disabled = false;
+  }
 }
 
 export function changeInnerTextContent(element, textContent) {

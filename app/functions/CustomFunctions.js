@@ -1,7 +1,9 @@
 import { getSetting, downloadFile } from "./CoreFunctions.js";   
 import { getCookie } from "./CookieFunctions.js";
+import { POSTJSONRequest } from "./CoreFunctions.js";
 
 let cachedApiAddress = null; // so that copy urs will not be async (does not work in Safari)
+let cachedFileSettings = null;
 
 export async function initApiAddressCache(){
     cachedApiAddress = await getSetting("api_address");
@@ -9,6 +11,18 @@ export async function initApiAddressCache(){
         console.error("API address is not defined in settings.");
     }
    
+}
+
+export function getFileSettings(){
+    return cachedFileSettings;
+}
+
+export async function initFileSettingsCache(){
+    const serverResponse= await POSTJSONRequest({request: "get_file_settings"});
+    if (serverResponse.success) {
+        cachedFileSettings = serverResponse.data;
+    }
+  
 }
 
 export async function generateDownloadLinkOld(filename){

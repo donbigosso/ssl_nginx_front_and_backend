@@ -1,6 +1,6 @@
 import { showRenameModal, showDeleteModal} from "./NewModalMethods.js";
 import { verifySession, requestRenameFile, requestDeleteFile } from "./RequestFunctions.js";
-import { getSessionToken, showRenameFeedback, showDeleteFeedback } from "./CustomFunctions.js";
+import { getSessionToken, showRenameFeedback, showDeleteFeedback} from "./CustomFunctions.js";
 import { newHideModal } from "./PageAppearance.js";
 export async function handleFileRename(filename){
    

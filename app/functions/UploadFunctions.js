@@ -1,11 +1,12 @@
-import { show, hide, changeInnerTextContent, changeInnerHTML, showLoggedOnly } from "./PageAppearance.js";
+import { show, hide, changeInnerTextContent, changeInnerHTML, showLoggedOnly, disableButton, enableButton } from "./PageAppearance.js";
 import { getSetting } from "./CoreFunctions.js";
-import { getSessionToken, showFeedback } from "./CustomFunctions.js"; 
+import { getSessionToken,  getFileSettings  } from "./CustomFunctions.js"; 
 import { addRowToTable } from "./TableFunctions.js";
 const uploadAlertField = document.getElementById('upload-alert-field');
 const uploadSuccessLine = document.getElementById('upload-success-line');
 const fileInput = document.getElementById("file-upload");
 const uploadForm = document.getElementById("upload-form");
+const uploadButton = document.getElementById("upload-btn");
    
     if (uploadForm) {
         uploadForm.addEventListener("submit", uploadFile);
@@ -18,7 +19,8 @@ const uploadForm = document.getElementById("upload-form");
 export async function uploadFile(e) {
     e.preventDefault();
    const amountVerif = verifyFileAmount();
-   if(amountVerif){
+const sizeVerif = verifyFileSize();
+   if(amountVerif && sizeVerif){
     const fileList = returnFileList();
     
      const formData = new FormData();
@@ -86,8 +88,9 @@ function hideAlertsAndList(){
 }
 
 function showFileList(){
+    enableButton(uploadButton);
     hideAlertsAndList();
-    if(verifyFileAmount()){
+    if(verifyFileAmount() && verifyFileSize()){
         const fileList = returnFileList();
         const listLength = fileList.length;
       
@@ -103,30 +106,53 @@ function showFileList(){
         //"Following files were selected: " + stringList+"."
 
     }
-    console.log("DEB543 show file list");
+
 
 }
 
 function verifyFileAmount(){
+    const fileLimit = getFileSettings().UPLOAD_MAX_FILES;
     const fileList = returnFileList();
     const listLength = fileList.length;
     if(listLength === 0){
         console.warn("WRN231 No files were selected.");
         showUploadAlert("No files selected. Please select at least one file");
+        disableButton(uploadButton);
         return false;
     }
-    if(listLength > 5){
+    if(listLength > fileLimit){
         console.warn("WRN232 Too many files were selected.");
         show(uploadAlertField, 'block');
-        changeInnerTextContent(uploadAlertField,"Too many files selected. Please select up to 5 files.");
+        changeInnerTextContent(uploadAlertField,"Too many files selected. Please select up to " + fileLimit + " files.");
+        disableButton(uploadButton);
+    
         return false;
     
     }
-    console.log("DEB5623 Correct amount selected");
+   
     hideAlertsAndList();
     return true;
 
 }
+
+function verifyFileSize(){
+    const fileLimit = getFileSettings().UPLOAD_MAX_SIZE_MB;
+    const fileLimitBytes = fileLimit * 1024 * 1024 - 1024;
+    console.log("DEB6532, file limit in bytes: ", fileLimitBytes);
+    const fileList = returnFileList();
+    const listLength = fileList.length;
+    for(let i = 0; i < listLength; i++){
+        if(fileList[i].size > fileLimitBytes){
+            console.warn("WRN233 File too large.");
+            showUploadAlert("File " + fileList[i].name + " is too large. Please select a file smaller than " + fileLimit + " MB.");
+            disableButton(uploadButton);
+            return false;
+        }
+    }
+    return true;
+}
+
+
 
 function showLoadingSpinner(){
     show(uploadSuccessLine,'block');
