@@ -30,3 +30,7 @@ Thumbs.db
 
 #my junk
 junk/
+
+#media items
+app/media_items/*
+app/media_items/.gitkeep
