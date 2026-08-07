@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Donbigosso Galleries</title>
+    <meta property="og:title" content="Donbigosso Galleries">
+    <meta property="og:description" content="Beautiful galleries by Donbigosso">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://donbigosso.polafri.pl/galleries/">
+    <meta property="og:image" content="https://donbigosso.polafri.pl/images/logo.png">
+    <meta property="og:image:width" content="400">
+    <meta property="og:image:height" content="400">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body class="galleries-page d-flex flex-column min-vh-100">
+    <header class="navbar navbar-expand galleries-nav sticky-top">
+        <div class="container-fluid galleries-nav-inner">
+            <a class="navbar-brand galleries-brand" href="../">
+                <img src="../images/logo.png" alt="Logo" class="galleries-logo" width="40" height="40">
+                <span class="galleries-brand-text">Donbigosso</span>
+                <span class="galleries-brand-divider" aria-hidden="true"></span>
+                <span class="galleries-brand-sub">Galleries</span>
+            </a>
+
+            <div class="d-flex align-items-center gap-2 gap-md-3">
+                <span class="galleries-user logged-only">
+                    <i class="bi bi-person-circle"></i>
+                    <strong id="user-field">john.doe</strong>
+                </span>
+                <button class="btn galleries-btn-ghost unlogged-only" id="login-btn">Login</button>
+                <button class="btn galleries-btn-outline logged-only" id="logout-btn">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="galleries-hero">
+        <div class="galleries-hero-glow" aria-hidden="true"></div>
+        <div class="container galleries-hero-content">
+            <p class="galleries-eyebrow">Visual archive</p>
+            <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-4">
+                <div>
+                    <h1 class="galleries-title" id="galleries-heading">All Galleries</h1>
+                    <p class="galleries-subtitle" id="galleries-subtitle">
+                        Curated collections. Precision. Presence.
+                    </p>
+                </div>
+                <button class="btn galleries-btn-primary logged-only" id="add-gallery-btn">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>New Gallery</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <main class="container galleries-main flex-grow-1">
+        <!-- Picture tile test (dev) -->
+        <section class="galleries-media-preview d-none" id="media-preview-section" aria-label="Media preview">
+            <div class="galleries-section-head">
+                <h2 class="galleries-section-title">Media Preview</h2>
+            </div>
+            <div id="pics"></div>
+        </section>
+
+        <!-- Galleries Grid -->
+        <div class="row g-4" id="galleries-grid">
+            <!-- Gallery tiles inserted here -->
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="text-center galleries-loading">
+            <div class="spinner-border galleries-spinner d-none" id="loading-spinner" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- End of content marker (for infinite scroll) -->
+        <div id="scroll-sentinel" class="galleries-sentinel" aria-hidden="true"></div>
+
+        <!-- Feedback -->
+        <div id="global-feedback" class="position-fixed top-50 start-50 translate-middle galleries-feedback opacity-0">
+            Global feedback
+        </div>
+    </main>
+
+    <!-- Generic Modal -->
+    <div class="modal galleries-modal" id="my_modal" tabindex="-1" aria-labelledby="my-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="my-modal-label">Modal Label</h5>
+                    <button type="button" id="modal-close-btn" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Modal text
+                </div>
+                <div id="modal-alert-field" class="alert alert-danger m-3 mt-0" role="alert">
+                    This is an error
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="modal-btn-1">Button 1</button>
+                    <button type="button" class="btn btn-danger" id="modal-btn-2">Button 2</button>
+                    <button type="button" class="btn btn-primary" id="modal-btn-3">Button 3</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="galleries-footer mt-auto">
+        <div class="container">
+            <span class="galleries-footer-mark">Donbigosso</span>
+            <span class="galleries-footer-dot" aria-hidden="true"></span>
+            <span>2026</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="./app.js"></script>
+</body>
+</html>
