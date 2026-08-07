@@ -32,5 +32,5 @@ Thumbs.db
 junk/
 
 #media items
-app/media_items/*
-app/media_items/.gitkeep
+app/backend/media_items/*
+app/backend/media_items/.gitkeep
