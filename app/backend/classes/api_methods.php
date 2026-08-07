@@ -83,6 +83,24 @@ class ApiMethods extends Core
                     $this->send_JSON_Response(true, "Files requested", "", "", ['files' => $file_model->create_uploaded_files_table()]);
                     break;
                 }
+                case 'list_galleries':
+                    $this->handle_list_galleries($input);
+                    break;
+                case 'get_gallery':
+                    $this->handle_get_gallery($input);
+                    break;
+                case 'list_gallery_media':
+                    $this->handle_list_gallery_media($input);
+                    break;
+                case 'get_gallery_media_item':
+                    $this->handle_get_gallery_media_item($input);
+                    break;
+                case 'get_gallery_cover_filename':
+                    $this->handle_get_gallery_cover_filename($input);
+                    break;
+                case 'get_gallery_cover_miniature_filename':
+                    $this->handle_get_gallery_cover_miniature_filename($input);
+                    break;
                 case 'download':
                     $this->handle_download();
                     break;
@@ -154,14 +172,45 @@ class ApiMethods extends Core
                 case 'delete_file':
                     $this->handle_delete_file($input);
                     break;
+                case 'delete_media_item':
+                case 'delete_media_item_by_user':
+                    $this->handle_delete_media_item_by_user($input);
+                    break;
+                case 'delete_media_item_by_admin':
+                    $this->handle_delete_media_item_by_admin($input);
+                    break;
                 case 'upload_files':
                     $this->handle_upload_files($input);
+                    break;
+                case 'upload_gallery_media':
+                    $this->handle_upload_gallery_media($input);
                     break;
                 case 'get_file_settings':
                     $this->handle_get_file_settings();
                     break;
                 case 'send_table_to_frontend':
                     $this->handle_send_table_to_frontend($input);
+                    break;
+                case 'create_gallery':
+                    $this->handle_create_gallery($input);
+                    break;
+                case 'update_gallery':
+                    $this->handle_update_gallery($input);
+                    break;
+                case 'delete_gallery':
+                    $this->handle_delete_gallery($input);
+                    break;
+                case 'delete_gallery_by_admin':
+                    $this->handle_delete_gallery_by_admin($input);
+                    break;
+                case 'update_gallery_media':
+                    $this->handle_update_gallery_media($input);
+                    break;
+                case 'remove_media_from_gallery':
+                    $this->handle_remove_media_from_gallery($input);
+                    break;
+                case 'set_gallery_cover':
+                    $this->handle_set_gallery_cover($input);
                     break;
 
                    
@@ -380,6 +429,291 @@ public function handle_clear_token(array $input): void{
             }
         }
     }
+
+    /**
+     * GET list_galleries — paginated media_collections for the galleries UI.
+     * Query params: page (default 1), limit (default 12, max 100),
+     *               user (optional username — only that owner's galleries).
+     */
+    private function handle_list_galleries(array $input): void
+    {
+        $page = isset($input['page']) ? (int)$input['page'] : 1;
+        $limit = isset($input['limit']) ? (int)$input['limit'] : 12;
+        $owner = isset($input['user']) ? trim((string)$input['user']) : null;
+        if ($owner === '') {
+            $owner = null;
+        }
+
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->list_galleries($page, $limit, $owner);
+
+        $this->send_JSON_Response(
+            true,
+            'Galleries retrieved successfully.',
+            '',
+            '',
+            $result
+        );
+    }
+
+    /**
+     * GET get_gallery — single media_collection by id (same shape as list_galleries rows).
+     * Query params: id (media_collection_id, required).
+     */
+    private function handle_get_gallery(array $input): void
+    {
+        $galleryId = isset($input['id']) ? (int)$input['id'] : 0;
+        if ($galleryId <= 0) {
+            $this->send_JSON_Response(false, '', '', 'Gallery id is required.', ['gallery' => null]);
+            return;
+        }
+
+        $gallery_model = new GalleryModel($this->db_access);
+        $gallery = $gallery_model->get_gallery_by_id($galleryId);
+
+        if ($gallery === null) {
+            $this->send_JSON_Response(false, '', '', 'Gallery not found.', ['gallery' => null]);
+            return;
+        }
+
+        $this->send_JSON_Response(
+            true,
+            'Gallery retrieved successfully.',
+            '',
+            '',
+            ['gallery' => $gallery]
+        );
+    }
+
+    /**
+     * GET list_gallery_media — paginated media items in a gallery.
+     * Query params: id (media_collection_id, required),
+     *               page (default 1), limit (default 20, max 100).
+     */
+    private function handle_list_gallery_media(array $input): void
+    {
+        $galleryId = isset($input['id']) ? (int)$input['id'] : 0;
+        $page = isset($input['page']) ? (int)$input['page'] : 1;
+        $limit = isset($input['limit']) ? (int)$input['limit'] : 20;
+
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->list_gallery_media($galleryId, $page, $limit);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            [
+                'media' => $result['media'],
+                'page' => $result['page'],
+                'limit' => $result['limit'],
+                'total' => $result['total'],
+                'has_more' => $result['has_more'],
+                'gallery_id' => $result['gallery_id'],
+            ]
+        );
+    }
+
+    /**
+     * GET get_gallery_cover_filename — regular cover image filename for a gallery.
+     * Query params: id (media_collection_id, required).
+     */
+    private function handle_get_gallery_cover_filename(array $input): void
+    {
+        $galleryId = isset($input['id']) ? (int)$input['id'] : 0;
+        if ($galleryId <= 0) {
+            $this->send_JSON_Response(false, '', '', 'Gallery id is required.', ['filename' => null]);
+            return;
+        }
+
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->get_gallery_cover_filename($galleryId);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['filename' => $result['filename']]
+        );
+    }
+
+    /**
+     * GET get_gallery_cover_miniature_filename — miniature cover filename for a gallery.
+     * Query params: id (media_collection_id, required).
+     * Miniature is derived as basename + "_sm" + extension (e.g. Image_00001_sm.jpeg).
+     */
+    private function handle_get_gallery_cover_miniature_filename(array $input): void
+    {
+        $galleryId = isset($input['id']) ? (int)$input['id'] : 0;
+        if ($galleryId <= 0) {
+            $this->send_JSON_Response(false, '', '', 'Gallery id is required.', ['filename' => null]);
+            return;
+        }
+
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->get_gallery_cover_miniature_filename($galleryId);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['filename' => $result['filename']]
+        );
+    }
+
+    /**
+     * POST create_gallery — insert media_collections + collection_owners (creator).
+     * Body: token, title, description (optional).
+     */
+    private function handle_create_gallery(array $input): void
+    {
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->create_gallery($input);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['gallery' => $result['gallery']]
+        );
+    }
+
+    /**
+     * POST update_gallery — owner updates title, description, and/or register_date.
+     * Body: token, id, optional title, description, register_date (or added_date).
+     */
+    private function handle_update_gallery(array $input): void
+    {
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->update_gallery($input);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['gallery' => $result['gallery']]
+        );
+    }
+
+    /**
+     * POST delete_gallery — owner deletes a gallery.
+     * Body: token, id.
+     */
+    private function handle_delete_gallery(array $input): void
+    {
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->delete_gallery($input);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error']
+        );
+    }
+
+    /**
+     * POST delete_gallery_by_admin — admin hard-deletes gallery + all its media files.
+     * Body: token (admin), id|gallery_id.
+     */
+    private function handle_delete_gallery_by_admin(array $input): void
+    {
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->delete_gallery_by_admin($input);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            [
+                'media_deleted' => $result['media_deleted'] ?? 0,
+            ]
+        );
+    }
+
+    /**
+     * GET get_gallery_media_item — one media item in a gallery.
+     * Query: gallery_id (or id), media_id (or picid).
+     */
+    private function handle_get_gallery_media_item(array $input): void
+    {
+        $galleryId = isset($input['gallery_id'])
+            ? (int)$input['gallery_id']
+            : (isset($input['id']) ? (int)$input['id'] : 0);
+        $mediaId = isset($input['media_id'])
+            ? (int)$input['media_id']
+            : (isset($input['picid']) ? (int)$input['picid'] : 0);
+
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->get_gallery_media_item($galleryId, $mediaId);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['media' => $result['media']]
+        );
+    }
+
+    /**
+     * POST update_gallery_media — owner updates picture title/description.
+     * Body: token, gallery_id, media_id, optional title, description.
+     */
+    private function handle_update_gallery_media(array $input): void
+    {
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->update_gallery_media($input);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['media' => $result['media']]
+        );
+    }
+
+    /**
+     * POST remove_media_from_gallery — owner removes a picture from a gallery.
+     * Body: token, gallery_id, media_id.
+     */
+    private function handle_remove_media_from_gallery(array $input): void
+    {
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->remove_media_from_gallery($input);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error']
+        );
+    }
+
+    /**
+     * POST set_gallery_cover — owner sets collection cover to a gallery media item.
+     * Body: token, gallery_id, media_id.
+     */
+    private function handle_set_gallery_cover(array $input): void
+    {
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->set_gallery_cover($input);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['gallery' => $result['gallery']]
+        );
+    }
     public function handle_rename_file(array $input){
      $file_model = new FileModel($this->db_access);
      $rename_output= $file_model->rename_file($input);
@@ -390,6 +724,54 @@ public function handle_clear_token(array $input): void{
         $file_model = new FileModel($this->db_access);
         $delete_output = $file_model->delete_file($input);
         $this->send_JSON_Response(true, "File deleted MOCK", "", "", ["delete_output" => $delete_output]);
+    }
+
+    /**
+     * POST delete_media_item / delete_media_item_by_user
+     * Body: token, media_item_id|media_id|id (or filename).
+     */
+    private function handle_delete_media_item_by_user(array $input): void
+    {
+        $file_model = new FileModel($this->db_access);
+        $result = $file_model->delete_media_item_by_user($input);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            [
+                'deleted' => $result['deleted'],
+                'media_item_id' => $result['media_item_id'],
+                'file_id' => $result['file_id'],
+                'filename' => $result['filename'],
+                'files_removed' => $result['files_removed'],
+            ]
+        );
+    }
+
+    /**
+     * POST delete_media_item_by_admin
+     * Body: token (admin), media_item_id|media_id|id (or filename).
+     */
+    private function handle_delete_media_item_by_admin(array $input): void
+    {
+        $file_model = new FileModel($this->db_access);
+        $result = $file_model->delete_media_item_by_admin($input);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            [
+                'deleted' => $result['deleted'],
+                'media_item_id' => $result['media_item_id'],
+                'file_id' => $result['file_id'],
+                'filename' => $result['filename'],
+                'files_removed' => $result['files_removed'],
+            ]
+        );
     }
     public function handle_get_file_settings(){
         $file_settings = $this->return_file_settings();
@@ -406,6 +788,27 @@ public function handle_clear_token(array $input): void{
         $this->send_JSON_Response($success, $message, "", $error, ["uploaded_files" => $uploaded_files]);
     }
 
+    /**
+     * POST upload_gallery_media — single gallery picture upload (multipart).
+     * Fields: token, gallery_id, title, description, file (one image).
+     */
+    private function handle_upload_gallery_media(array $input): void
+    {
+        $file_model = new FileModel($this->db_access);
+        $result = $file_model->upload_gallery_media($input);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            [
+                'media' => $result['media'],
+                'gallery_id' => $result['gallery_id'],
+            ]
+        );
+    }
+
     public function handle_send_table_to_frontend(array $input){
         $s=true;
         $msg="msg";
@@ -418,12 +821,15 @@ public function handle_clear_token(array $input): void{
        
         $send_table_output = $tailored_db_methods->send_table_to_frontend($input);
 
-        $success = $send_table_output["success"];
-        $message = $send_table_output["message"];
-        $error = $send_table_output["error"];
-        $data = $send_table_output["data"];
+        $success = (bool)($send_table_output["success"] ?? false);
+        $message = (string)($send_table_output["message"] ?? "");
+        $error = (string)($send_table_output["error"] ?? "");
+        // data may be a list-of-rows table; always pass an array (PHP typed param)
+        $data = $send_table_output["data"] ?? [];
+        if (!is_array($data)) {
+            $data = [];
+        }
         $this->send_JSON_Response($success, $message, "", $error, $data);
-         return; 
     }
 
     /**

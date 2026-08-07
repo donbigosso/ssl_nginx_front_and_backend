@@ -1,7 +1,7 @@
-import { fetchAPIdataWGetParams } from "./CoreFunctions.js ";
-import { POSTJSONRequest } from "./CoreFunctions.js";
+import { fetchAPIdataWGetParams, POSTJSONRequest } from "./CoreFunctions.js";
 import {showFeedback} from "./CustomFunctions.js";
 import{getCookie} from "./CookieFunctions.js";
+import { validateUsernameAndPassword } from "./FormValidation.js";
 export async function getFileList() {
     const apiResponse = await fetchAPIdataWGetParams({ request: 'list_files' });
     const success = apiResponse.success;
@@ -23,11 +23,8 @@ export async function getFileList() {
 }
 
 export async function createUser(username, password) { //Butatren@344
-    const passRegex = /^(?=.*[A-Z])(?=.*\d).{10,}$/;
-    const usrNameRegex = /^[a-zA-Z0-9_]{4,16}$/;
-    const isPassValid = passRegex.test(password);
-    const isUsrNameValid = usrNameRegex.test(username);
-    if(isPassValid && isUsrNameValid){
+    const validation = validateUsernameAndPassword(username, password);
+    if(validation.valid){
         // TODO: Call API to create user
      
         const serverResponse= await POSTJSONRequest({request: "create_user",name:username, password:password});
@@ -52,8 +49,9 @@ export async function createUser(username, password) { //Butatren@344
         }
     }
     else {
-        console.warn("DEB762 Invalid username or password");
-        return alert('Username or password does not fulfill requirements.');
+        console.warn("DEB762 Invalid username or password:", validation.error);
+        showFeedback(validation.error, 'red');
+        return false;
     }
 }
 
@@ -117,5 +115,33 @@ export async function deleteUserByAdmin(username){
 export async function resetUserPasswordByAdmin(username, password) {
     const token = window.SESSION.token;
     const serverResponse = await POSTJSONRequest({ request: "reset_password_by_admin", name: username, password: password, token: token });
+    return serverResponse;
+}
+
+/**
+ * Paginated gallery list (same API as frontend galleries).
+ * @param {number} page
+ * @param {number} limit
+ */
+export async function listGalleriesAdmin(page = 1, limit = 50) {
+    const serverResponse = await fetchAPIdataWGetParams({
+        request: "list_galleries",
+        page,
+        limit,
+    });
+    return serverResponse;
+}
+
+/**
+ * Admin hard-delete gallery + all media belonging to it.
+ * @param {number} galleryId
+ */
+export async function deleteGalleryByAdmin(galleryId) {
+    const token = window.SESSION.token;
+    const serverResponse = await POSTJSONRequest({
+        request: "delete_gallery_by_admin",
+        token,
+        id: galleryId,
+    });
     return serverResponse;
 }

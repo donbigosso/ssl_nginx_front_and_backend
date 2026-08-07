@@ -1,6 +1,11 @@
 import { checkHTMLInstance } from "./CoreFunctions.js";
 import { showFeedback } from "./CustomFunctions.js";
-import { verifySession} from "./RequestFunctions.js";
+import {
+  VALIDATION_CONSTRAINTS,
+  validateUserRegistration,
+  validateDeleteUserConfirmation,
+  validatePasswordChange,
+} from "./FormValidation.js";
 export function show(element, display = "inline-block") {
   if (!(element instanceof HTMLElement)) {
     console.warn("show(): invalid element");
@@ -67,6 +72,30 @@ export function changeInnerHTML(element, htmlContent) {
     }
 }
 
+export function createHTMLelement(elementType, className){
+  const element = document.createElement(elementType);
+  element.className = className;
+  return element;
+}
+
+export function createDIV(className){
+  return createHTMLelement('div', className);
+}
+
+export function createLabel(textContent, htmlFor, className){
+  const label = createHTMLelement('label', className);
+  label.textContent = textContent;
+  label.htmlFor = htmlFor;
+  return label;
+}
+
+export function createButton(type, text, className){
+  const button = createHTMLelement('button', className);
+  button.type = type;
+  button.textContent = text;
+  return button;
+}
+
 
 
   export function drawTable(data, className="") {
@@ -97,6 +126,164 @@ export function changeInnerHTML(element, htmlContent) {
     return table;
 }
 
+/**
+ * Create an empty table with header row (for infinite-scroll row append).
+ * @param {string[]} headers
+ * @param {string} [className]
+ * @returns {HTMLTableElement}
+ */
+export function createTableWithHeaders(headers, className = "") {
+  const table = document.createElement("table");
+  table.className = className;
+
+  const thead = table.createTHead();
+  const headerRow = thead.insertRow();
+  (headers || []).forEach((h) => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    headerRow.appendChild(th);
+  });
+
+  // tbody is optional; browsers place appended <tr> correctly after thead
+  table.createTBody();
+  return table;
+}
+
+/**
+ * Build one table body row from cell values.
+ * @param {Array<string|number|null|undefined>} cells
+ * @returns {HTMLTableRowElement}
+ */
+export function createTableRow(cells) {
+  const tr = document.createElement("tr");
+  (cells || []).forEach((cell) => {
+    const td = tr.insertCell();
+    td.textContent = cell == null ? "" : String(cell);
+  });
+  return tr;
+}
+
+/**
+ * Table wrapper used by createInfiniteScroller for gallery listing.
+ * Returns a table with gallery column headers; rows are appended as items.
+ * appendChild(tr) is redirected into tbody so the scroller can treat the
+ * table as its wrapper element.
+ * @returns {HTMLTableElement}
+ */
+export function createGalleriesTableWrapper() {
+  const table = createTableWithHeaders(
+    [
+      "ID",
+      "Title",
+      "Description",
+      "Owner",
+      "Images",
+      "Register date",
+      "Cover ID",
+    ],
+    "nice-table"
+  );
+  const tbody = table.tBodies[0] || table.createTBody();
+  const originalAppend = table.appendChild.bind(table);
+  table.appendChild = (node) => {
+    if (node && node.nodeName === "TR") {
+      return tbody.appendChild(node);
+    }
+    return originalAppend(node);
+  };
+  return table;
+}
+
+/**
+ * One gallery as a table row (for infinite scroller createItem).
+ * @param {object} gallery
+ * @returns {HTMLTableRowElement}
+ */
+export function createGalleryTableRow(gallery) {
+  return createTableRow([
+    gallery?.id ?? "",
+    gallery?.title ?? "",
+    gallery?.description ?? "",
+    gallery?.owner ?? "",
+    gallery?.image_count ?? 0,
+    gallery?.register_date ?? "",
+    gallery?.collection_cover_id ?? "",
+  ]);
+}
+
+/**
+ * Delete-gallery form: select gallery + Delete (simple OK confirm, no typed confirmation).
+ * @param {Array<{id:number,title:string,owner?:string|null}>} galleryList
+ * @param {(payload:{galleryId:number,title:string}) => Promise<boolean>} onSubmit
+ * @returns {HTMLFormElement}
+ */
+export function drawGalleryDeletionForm(galleryList, onSubmit) {
+  const form = document.createElement("form");
+
+  const selectWrapper = createDIV("mb-3 px-5");
+  const selectLabel = createLabel("Select Gallery", "selectGallery", "form-label");
+
+  const select = createHTMLelement("select", "form-select");
+  select.name = "selectGallery";
+  select.id = "selectGallery";
+
+  const defaultOption = document.createElement("option");
+  defaultOption.textContent = "-- Select a gallery --";
+  defaultOption.value = "";
+  select.appendChild(defaultOption);
+
+  (galleryList || []).forEach((g) => {
+    const option = document.createElement("option");
+    option.value = String(g.id);
+    const owner = g.owner ? ` · ${g.owner}` : "";
+    option.textContent = `#${g.id} — ${g.title || "Untitled"}${owner}`;
+    select.appendChild(option);
+  });
+
+  selectWrapper.appendChild(selectLabel);
+  selectWrapper.appendChild(select);
+  form.appendChild(selectWrapper);
+
+  const hint = createDIV("form-text text-muted px-5 mb-3");
+  hint.textContent =
+    "This permanently deletes the gallery and all media files that belong to it.";
+  form.appendChild(hint);
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.textContent = "Delete Gallery";
+  btn.className = "btn btn-danger w-50";
+  btn.addEventListener("click", async () => {
+    const galleryId = parseInt(select.value, 10);
+    if (!galleryId) {
+      return showFeedback("Please select a gallery.", "red");
+    }
+
+    const selectedOption = select.options[select.selectedIndex];
+    const title = selectedOption
+      ? selectedOption.textContent.replace(/^#\d+\s*—\s*/, "").split(" · ")[0]
+      : String(galleryId);
+
+    const ok = window.confirm(
+      `Delete gallery #${galleryId} ("${title}") and all of its media files?\n\nThis cannot be undone.`
+    );
+    if (!ok) return;
+
+    const wasDeleted = await onSubmit({ galleryId, title });
+    if (wasDeleted) {
+      const optionToRemove = select.querySelector(`option[value="${galleryId}"]`);
+      if (optionToRemove) optionToRemove.remove();
+      select.value = "";
+    }
+  });
+
+  const btnWrapper = createDIV("d-flex justify-content-center mt-2 px-5");
+  btnWrapper.appendChild(btn);
+  form.appendChild(btnWrapper);
+
+  return form;
+}
+
 export function drawUserCreationForm(onSubmit) {
     const form = document.createElement('form');
     form.setAttribute('autocomplete', 'off');
@@ -108,13 +295,8 @@ export function drawUserCreationForm(onSubmit) {
     ];
 
     fields.forEach(({ label, name, type, autocomplete }) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'mb-3 px-5';
-
-        const lbl = document.createElement('label');
-        lbl.textContent = label;
-        lbl.htmlFor = name;
-        lbl.className = 'form-label';
+        const wrapper = createDIV('mb-3 px-5');
+        const lbl = createLabel(label, name, 'form-label');
 
         const input = document.createElement('input');
         input.type = type;
@@ -128,21 +310,17 @@ export function drawUserCreationForm(onSubmit) {
         form.appendChild(wrapper);
     });
 
-    const btn = document.createElement('button');
-    const btnWrapper = document.createElement('div');
-    btnWrapper.className = 'd-flex justify-content-center';
+    const btn = createButton('button', 'Create User', 'btn btn-primary w-50');
+    const btnWrapper = createDIV('d-flex justify-content-center');
 
     btnWrapper.appendChild(btn);
-    btn.type = 'button';
-    btn.textContent = 'Create User';
-    btn.className = 'btn btn-primary w-50';
     btn.addEventListener('click', () => {
         const username        = form.username.value.trim();
         const password        = form.password.value;
         const confirmPassword = form.confirmPassword.value;
 
-        if (!username || !password) return showFeedback('Please fill in all fields.', 'red');
-        if (password !== confirmPassword) return showFeedback('Passwords do not match.', 'red');
+        const validation = validateUserRegistration(username, password, confirmPassword);
+        if (!validation.valid) return showFeedback(validation.error, 'red');
 
         onSubmit({ username, password });
     });
@@ -161,18 +339,12 @@ export function drawUserDeletionForm(userList, onSubmit) {
     
 
     // Dropdown
-    const selectWrapper = document.createElement('div');
-    selectWrapper.className = 'mb-3 px-5';
+    const selectWrapper = createDIV('mb-3 px-5');
+    const selectLabel = createLabel('Select User', 'selectUser', 'form-label');
 
-    const selectLabel = document.createElement('label');
-    selectLabel.textContent = 'Select User';
-    selectLabel.htmlFor = 'selectUser';
-    selectLabel.className = 'form-label';
-
-    const select = document.createElement('select');
+    const select = createHTMLelement('select', 'form-select');
     select.name = 'selectUser';
     select.id = 'selectUser';
-    select.className = 'form-select';
 
     const defaultOption = document.createElement('option');
     defaultOption.textContent = '-- Select a user --';
@@ -191,13 +363,8 @@ export function drawUserDeletionForm(userList, onSubmit) {
     form.appendChild(selectWrapper);
 
     // Confirm username input
-    const confirmWrapper = document.createElement('div');
-    confirmWrapper.className = 'mb-3 px-5';
-
-    const confirmLabel = document.createElement('label');
-    confirmLabel.textContent = 'Type username to confirm';
-    confirmLabel.htmlFor = 'confirmUsername';
-    confirmLabel.className = 'form-label';
+    const confirmWrapper = createDIV('mb-3 px-5');
+    const confirmLabel = createLabel('Type username to confirm', 'confirmUsername', 'form-label');
 
     const confirmInput = document.createElement('input');
     confirmInput.type = 'text';
@@ -219,9 +386,8 @@ export function drawUserDeletionForm(userList, onSubmit) {
         const selectedUser    = select.value;
         const confirmedUser   = confirmInput.value.trim();
 
-        if (!selectedUser) return showFeedback('Please select a user.',"red");
-        if (!confirmedUser) return showFeedback('Please type the username to confirm.',"red");
-        if (selectedUser !== confirmedUser) return showFeedback('Username does not match.', 'red');
+        const validation = validateDeleteUserConfirmation(selectedUser, confirmedUser);
+        if (!validation.valid) return showFeedback(validation.error, "red");
 
         const wasDeleted = await onSubmit({ username: selectedUser });
 
@@ -233,8 +399,7 @@ export function drawUserDeletionForm(userList, onSubmit) {
         }
     });
 
-    const btnWrapper = document.createElement('div');
-    btnWrapper.className = 'd-flex justify-content-center mt-2 px-5';
+    const btnWrapper = createDIV('d-flex justify-content-center mt-2 px-5');
     btnWrapper.appendChild(btn);
     form.appendChild(btnWrapper);
 
@@ -242,22 +407,15 @@ export function drawUserDeletionForm(userList, onSubmit) {
 }
 
 export function drawPasswordChangeForm(userList, onSubmit) {
-    const passRegex = /^(?=.*[A-Z])(?=.*\d).{10,}$/;
     const form = document.createElement('form');
 
     // User dropdown
-    const selectWrapper = document.createElement('div');
-    selectWrapper.className = 'mb-3 px-5';
+    const selectWrapper = createDIV('mb-3 px-5');
+    const selectLabel = createLabel('Select User', 'selectUserPwd', 'form-label');
 
-    const selectLabel = document.createElement('label');
-    selectLabel.textContent = 'Select User';
-    selectLabel.htmlFor = 'selectUserPwd';
-    selectLabel.className = 'form-label';
-
-    const select = document.createElement('select');
+    const select = createHTMLelement('select', 'form-select');
     select.name = 'selectUserPwd';
     select.id = 'selectUserPwd';
-    select.className = 'form-select';
 
     const defaultOption = document.createElement('option');
     defaultOption.textContent = '-- Select a user --';
@@ -282,13 +440,8 @@ export function drawPasswordChangeForm(userList, onSubmit) {
     ];
 
     fields.forEach(({ label, name, id }) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'mb-3 px-5';
-
-        const lbl = document.createElement('label');
-        lbl.textContent = label;
-        lbl.htmlFor = id;
-        lbl.className = 'form-label';
+        const wrapper = createDIV('mb-3 px-5');
+        const lbl = createLabel(label, id, 'form-label');
 
         const input = document.createElement('input');
         input.type = 'password';
@@ -301,30 +454,24 @@ export function drawPasswordChangeForm(userList, onSubmit) {
         form.appendChild(wrapper);
     });
 
-    // Password requirements hint
+    // Password requirements hint (from central constraints)
     const hint = document.createElement('p');
     hint.className = 'text-muted px-5 small';
-    hint.textContent = 'Password must be at least 10 characters, contain one uppercase letter and one number.';
+    hint.textContent = `Password must be ${VALIDATION_CONSTRAINTS.passwordPatternHint}.`;
     form.appendChild(hint);
 
     // Submit button
-    const btnWrapper = document.createElement('div');
-    btnWrapper.className = 'd-flex justify-content-center mt-2 px-5';
+    const btnWrapper = createDIV('d-flex justify-content-center mt-2 px-5');
 
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = 'Change Password';
-    btn.className = 'btn btn-warning w-50';
+    const btn = createButton('button', 'Change Password', 'btn btn-warning w-50');
 
     btn.addEventListener('click', () => {
         const username        = select.value;
         const password        = form.newPassword.value;
         const confirmPassword = form.confirmPassword.value;
 
-        if (!username)         return showFeedback('Please select a user.',"red");
-        if (!password)         return showFeedback('Please enter a new password.',"red");
-        if (!passRegex.test(password)) return showFeedback('Password must be at least 10 characters, include one uppercase letter and one number.',"red");
-        if (password !== confirmPassword) return showFeedback('Passwords do not match.',"red");
+        const validation = validatePasswordChange(username, password, confirmPassword);
+        if (!validation.valid) return showFeedback(validation.error, "red");
 
         onSubmit({ username, password });
         return showFeedback('Password for ' + username + ' has been changed successfully!');

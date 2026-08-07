@@ -108,6 +108,62 @@ export function changeInnerHTML(element, htmlContent) {
     }
 }
 
+export function createHTMLelement(elementType, className){
+  const element = document.createElement(elementType);
+  element.className = className;
+  return element;
+}
+
+export function createDIV(className){
+  return createHTMLelement('div', className);
+}
+
+export function createLabel(textContent, htmlFor, className){
+  const label = createHTMLelement('label', className);
+  label.textContent = textContent;
+  label.htmlFor = htmlFor;
+  return label;
+}
+
+export function createButton(type, text, className){
+  const button = createHTMLelement('button', className);
+  button.type = type;
+  button.textContent = text;
+  return button;
+}
+
+export function createInput(type, className, id, required){
+  const input = createHTMLelement('input', className);
+  input.type = type;
+  input.id = id;
+  input.required = required;
+  return input;
+}
+
+export function createBootstrapTextInput(id, required, maxLength, value){
+  const input = createInput('text', 'form-control', id, required);
+  input.maxLength = maxLength;
+  input.value = value || '';
+  return input;
+}
+export function createBootstrapTextArea(id, rows, maxLength, value, required = false){
+  const textarea = createHTMLelement('textarea', 'form-control');
+  textarea.id = id;
+  textarea.rows = rows;
+  textarea.maxLength = maxLength;
+  textarea.value = value || '';
+  textarea.required = required;
+  return textarea;
+}
+
+
+export function adjustElementClassAndText(element, classNAme, textContent){
+  if (checkHTMLInstance(element)) {
+    element.className = classNAme;
+    element.textContent = textContent;
+  }
+}
+
 export async function displayLoggedUser(){
   const user =await verifySession();
   const userField = document.getElementById("user-field");
