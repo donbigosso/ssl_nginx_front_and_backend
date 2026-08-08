@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     await initFileSettingsCache();
     await loadGalleries();
     handleAutoLogin();
-    createImagepics();
+    //createImagepics();
   })();
 
   const loginButton = document.querySelector("#login-btn");

@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   handleAutoLogin();
   initializeTableSorting();
   initializeTableButtons();
-  performTests();
+  // performTests();
   await initApiAddressCache();
   await initFileSettingsCache();
 })()
