@@ -487,6 +487,9 @@ class ImageManipulator
             '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
             '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
             '/usr/share/fonts/truetype/freefont/FreeSans.ttf',
+            '/usr/share/fonts/dejavu/DejaVuSans.ttf',
+            '/usr/share/fonts/liberation/LiberationSans-Regular.ttf',
+            '/usr/share/fonts/freefont/FreeSans.ttf',
         ]);
 
         foreach ($candidates as $path) {
