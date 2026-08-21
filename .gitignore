@@ -31,6 +31,9 @@ Thumbs.db
 #my junk
 junk/
 
+#settings
+app/settings.json
+
 #media items
 app/backend/media_items/*
 app/backend/media_items/.gitkeep
