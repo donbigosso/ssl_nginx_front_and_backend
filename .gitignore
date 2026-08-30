@@ -37,3 +37,8 @@ app/settings.json
 #media items
 app/backend/media_items/*
 app/backend/media_items/.gitkeep
+
+#logs
+app/logs/*
+!app/logs/.gitkeep
+
