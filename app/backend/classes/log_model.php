@@ -49,15 +49,29 @@ class LogModel
 
     /**
      * Log a method outcome. Admin actions should pass action with " - admin".
+     * $detail is appended to the action: "id 123" for DB rows, or a filename
+     * for file-manager actions — e.g. [upload gallery media: id 45]
+     * or [delete file: photo.jpg].
      */
-    public function record_result(string $action, bool $success, string $user = '-'): array
+    public function record_result(string $action, bool $success, string $user = '-', string $detail = ''): array
     {
+        $detail = trim($detail);
+        if ($detail !== '') {
+            $action = $action . ': ' . $detail;
+        }
+
         return $this->record(
             $success ? 'INFO' : 'WARN',
             $user,
             $action,
             $success ? 'ok' : 'fail'
         );
+    }
+
+    public static function id_detail($id): string
+    {
+        $n = (int)$id;
+        return $n > 0 ? 'id ' . $n : '';
     }
 
     /**

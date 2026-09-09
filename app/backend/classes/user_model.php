@@ -41,6 +41,7 @@ class UserModel
 
     public function new_user_create(string $name, string $password){
         $ok = false;
+        $logDetail = '';
         try {
             if(!empty($this->get_by_name($name))){
                 return false;
@@ -56,14 +57,15 @@ class UserModel
                 return false;
             }
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $this->db->insert('users', [
+            $userId = (int)$this->db->insert('users', [
                 'name'       => $name,
                 'password'   => $hashed_password
             ]);
-            $ok = true;
-            return true;
+            $ok = $userId > 0;
+            $logDetail = LogModel::id_detail($userId);
+            return $ok;
         } finally {
-            (new LogModel())->record_result('create user', $ok, $name !== '' ? $name : '-');
+            (new LogModel())->record_result('create user', $ok, $name !== '' ? $name : '-', $logDetail);
         }
     }
 
@@ -197,18 +199,20 @@ class UserModel
 
     public function reset_user_password( string $username, string $password, bool $write_log = true){
             $ok = false;
+            $logDetail = '';
             try {
             $user = $this->get_by_name($username);
         if (!$user) {
             return false;
         }
         $username = $user[0]['name'];
+        $logDetail = LogModel::id_detail($user[0]['user_id'] ?? 0);
         $this->db->update('users', ['password' => password_hash($password, PASSWORD_DEFAULT)], ['name' => $username]);
         $ok = true;
         return true;
             } finally {
                 if ($write_log) {
-                    (new LogModel())->record_result('reset password', $ok, $username !== '' ? $username : '-');
+                    (new LogModel())->record_result('reset password', $ok, $username !== '' ? $username : '-', $logDetail);
                 }
             }
     }
@@ -258,6 +262,7 @@ class UserModel
         $error = "";
         $user_to_delete = $input['name'] ?? '';
         $admin = $this->actor_from_token((string)($input['token'] ?? ''));
+        $logDetail = '';
         try {
         $admin_check = $this->verify_admin_by_token($input);
         if(!$admin_check['success']) {
@@ -269,6 +274,8 @@ class UserModel
     ];
 }  // ← closing brace goes HERE
 
+        $existing = $this->get_by_name($user_to_delete);
+        $logDetail = LogModel::id_detail(is_array($existing) && isset($existing[0]['user_id']) ? $existing[0]['user_id'] : 0);
 if($this->delete($user_to_delete)) {
     $success = true;
     $message = "User $user_to_delete deleted.";
@@ -281,7 +288,7 @@ return [
     "message" => $message
 ];
         } finally {
-            (new LogModel())->record_result('delete user - admin', $success, $admin);
+            (new LogModel())->record_result('delete user - admin', $success, $admin, $logDetail);
         }
         
         
@@ -293,6 +300,7 @@ return [
         $message = "";
         $error = "";
         $admin = $this->actor_from_token((string)($input['token'] ?? ''));
+        $logDetail = '';
 
         try {
         $admin_check = $this->verify_admin_by_token($input);
@@ -335,6 +343,8 @@ return [
             ];
         }
 
+        $existing = $this->get_by_name($username);
+        $logDetail = LogModel::id_detail(is_array($existing) && isset($existing[0]['user_id']) ? $existing[0]['user_id'] : 0);
         if($this->reset_user_password($username, $password, false)) {
             $success = true;
             $message = "Password changed for user: $username";
@@ -347,7 +357,7 @@ return [
             "message" => $message
         ];
         } finally {
-            (new LogModel())->record_result('reset password - admin', $success, $admin);
+            (new LogModel())->record_result('reset password - admin', $success, $admin, $logDetail);
         }
     }
 

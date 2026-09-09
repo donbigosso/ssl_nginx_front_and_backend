@@ -118,6 +118,7 @@ class GalleryModel
         $description = trim((string)($input['description'] ?? ''));
         $actor = $this->actor_from_token($token);
         $ok = false;
+        $logDetail = '';
         try {
         if ($token === '') {
             return [
@@ -217,6 +218,7 @@ class GalleryModel
             }
 
             $ok = true;
+            $logDetail = LogModel::id_detail($collectionId);
             return [
                 'success' => true,
                 'message' => 'Gallery created successfully.',
@@ -232,7 +234,7 @@ class GalleryModel
             ];
         }
         } finally {
-            (new LogModel())->record_result('create gallery', $ok, $actor);
+            (new LogModel())->record_result('create gallery', $ok, $actor, $logDetail);
         }
     }
 
@@ -274,6 +276,7 @@ class GalleryModel
         $galleryId = isset($input['id']) ? (int)$input['id'] : 0;
         $actor = $this->actor_from_token($token);
         $ok = false;
+        $logDetail = LogModel::id_detail($galleryId);
         try {
         if ($token === '') {
             return [
@@ -429,7 +432,7 @@ class GalleryModel
             ];
         }
         } finally {
-            (new LogModel())->record_result('update gallery', $ok, $actor);
+            (new LogModel())->record_result('update gallery', $ok, $actor, $logDetail);
         }
     }
 
@@ -896,6 +899,7 @@ class GalleryModel
             : (isset($input['id']) ? (int)$input['id'] : 0);
         $actor = $this->actor_from_token($token);
         $ok = false;
+        $logDetail = LogModel::id_detail($mediaId);
         try {
 
         $userId = $this->resolve_user_id_from_token($token);
@@ -989,7 +993,7 @@ class GalleryModel
             ];
         }
         } finally {
-            (new LogModel())->record_result('update gallery media', $ok, $actor);
+            (new LogModel())->record_result('update gallery media', $ok, $actor, $logDetail);
         }
     }
 
@@ -1008,6 +1012,7 @@ class GalleryModel
             : (isset($input['id']) ? (int)$input['id'] : 0);
         $actor = $this->actor_from_token($token);
         $ok = false;
+        $logDetail = LogModel::id_detail($mediaId);
         try {
 
         $userId = $this->resolve_user_id_from_token($token);
@@ -1073,7 +1078,7 @@ class GalleryModel
             ];
         }
         } finally {
-            (new LogModel())->record_result('remove media from gallery', $ok, $actor);
+            (new LogModel())->record_result('remove media from gallery', $ok, $actor, $logDetail);
         }
     }
 
@@ -1092,6 +1097,7 @@ class GalleryModel
             : (isset($input['id']) ? (int)$input['id'] : 0);
         $actor = $this->actor_from_token($token);
         $ok = false;
+        $logDetail = LogModel::id_detail($galleryId);
         try {
 
         $userId = $this->resolve_user_id_from_token($token);
@@ -1155,7 +1161,7 @@ class GalleryModel
             ];
         }
         } finally {
-            (new LogModel())->record_result('set gallery cover', $ok, $actor);
+            (new LogModel())->record_result('set gallery cover', $ok, $actor, $logDetail);
         }
     }
 
@@ -1171,6 +1177,7 @@ class GalleryModel
         $galleryId = isset($input['id']) ? (int)$input['id'] : 0;
         $actor = $this->actor_from_token($token);
         $ok = false;
+        $logDetail = LogModel::id_detail($galleryId);
         try {
 
         $userId = $this->resolve_user_id_from_token($token);
@@ -1210,7 +1217,7 @@ class GalleryModel
         $ok = !empty($result['success']);
         return $result;
         } finally {
-            (new LogModel())->record_result('delete gallery', $ok, $actor);
+            (new LogModel())->record_result('delete gallery', $ok, $actor, $logDetail);
         }
     }
 
@@ -1228,6 +1235,7 @@ class GalleryModel
             : (isset($input['gallery_id']) ? (int)$input['gallery_id'] : 0);
         $actor = $this->actor_from_token($token);
         $ok = false;
+        $logDetail = LogModel::id_detail($galleryId);
         try {
 
         $userModel = new UserModel($this->db);
@@ -1325,7 +1333,7 @@ class GalleryModel
             ];
         }
         } finally {
-            (new LogModel())->record_result('delete gallery - admin', $ok, $actor);
+            (new LogModel())->record_result('delete gallery - admin', $ok, $actor, $logDetail);
         }
     }
 

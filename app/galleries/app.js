@@ -3,7 +3,7 @@ import { showLoginModal } from "../functions/NewModalMethods.js";
 import { handleAutoLogin, handleLogout } from "../functions/LoginFunctions.js";
 import { initApiAddressCache, initFileSettingsCache } from "../functions/CustomFunctions.js";
 import { loadGalleries, handleAddGallery } from "../functions/GalleryFunctions.js";
-import {createImagepics} from "../functions/TestFunctions.js";
+//import {createImagepics} from "../functions/TestFunctions.js";
 
 document.addEventListener('DOMContentLoaded', () => {
   (async () => {
