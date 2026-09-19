@@ -39,9 +39,9 @@
                 </a>
             </div>
 
-            <div class="d-flex align-items-center gap-2 gap-md-3">
+            <div class="galleries-nav-actions d-flex align-items-center">
                 <span class="galleries-user logged-only">
-                    <i class="bi bi-person-circle"></i>
+                    <i class="bi bi-person-circle" aria-hidden="true"></i>
                     <strong id="user-field">john.doe</strong>
                 </span>
                 <button class="btn galleries-btn-ghost unlogged-only" id="login-btn">Login</button>
@@ -67,6 +67,28 @@
                     <p class="galleries-subtitle" id="gallery-description"></p>
                     <div class="gallery-preview-meta" id="gallery-meta" aria-label="Gallery details"></div>
                 </div>
+
+                <div class="d-flex flex-wrap align-items-center gap-2 ms-lg-auto">
+                    <div class="gallery-share-actions">
+                        <button
+                            type="button"
+                            class="btn galleries-btn-ghost gallery-share-icon-btn"
+                            id="gallery-copy-link-btn"
+                            title="Copy link"
+                        >
+                            <i class="bi bi-link-45deg"></i>
+                            <span class="visually-hidden">Copy link</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="btn galleries-btn-ghost gallery-share-icon-btn d-none"
+                            id="gallery-share-btn"
+                            title="Share"
+                        >
+                            <i class="bi bi-share"></i>
+                            <span class="visually-hidden">Share</span>
+                        </button>
+                    </div>
 
                 <!-- Owner tools -->
                 <div class="gallery-preview-owner-tools d-none" id="gallery-owner-tools">
@@ -113,6 +135,7 @@
                             </ul>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
         </div>

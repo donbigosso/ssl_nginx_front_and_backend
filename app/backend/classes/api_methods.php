@@ -110,6 +110,9 @@ class ApiMethods extends Core
                 case 'list_post_pages':
                     $this->handle_list_post_pages($input);
                     break;
+                case 'list_page_media':
+                    $this->handle_list_page_media($input);
+                    break;
                 case 'download':
                     $this->handle_download();
                     break;
@@ -237,8 +240,32 @@ class ApiMethods extends Core
                 case 'create_post':
                     $this->handle_create_post($input);
                     break;
+                case 'update_post':
+                    $this->handle_update_post($input);
+                    break;
                 case 'delete_post':
                     $this->handle_delete_post($input);
+                    break;
+                case 'list_posts_admin':
+                    $this->handle_list_posts_admin($input);
+                    break;
+                case 'list_media_items_admin':
+                    $this->handle_list_media_items_admin($input);
+                    break;
+                case 'list_page_posting_permissions':
+                    $this->handle_list_page_posting_permissions($input);
+                    break;
+                case 'add_page_posting_permission':
+                    $this->handle_add_page_posting_permission($input);
+                    break;
+                case 'remove_page_posting_permission':
+                    $this->handle_remove_page_posting_permission($input);
+                    break;
+                case 'update_post_media':
+                    $this->handle_update_post_media($input);
+                    break;
+                case 'remove_media_from_post':
+                    $this->handle_remove_media_from_post($input);
                     break;
                 default:
                     $this->send_JSON_Response(false, "", "", "Unknown request: " . $input['request']);
@@ -410,14 +437,19 @@ public function handle_clear_token(array $input): void{
             $warning = "";
             $error = "";
             $username = $result[0]['name'];
+            $isAdmin = $user->row_is_admin($result[0]);
         }
         else {
             $success = false;
             $warning = "";
             $error = "User not found.";
             $username = null;
+            $isAdmin = false;
         }
-        $this->send_JSON_Response($success, $message, $warning, $error, ['user_found' => $username]);
+        $this->send_JSON_Response($success, $message, $warning, $error, [
+            'user_found' => $username,
+            'is_admin' => $isAdmin,
+        ]);
     }
 
     /**
@@ -966,6 +998,19 @@ public function handle_clear_token(array $input): void{
         );
     }
 
+    private function handle_update_post(array $input): void
+    {
+        $model = new PostAndMessageModel($this->db_access);
+        $result = $model->update_post($input);
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['post' => $result['post'] ?? null]
+        );
+    }
+
     private function handle_delete_post(array $input): void
     {
         $model = new PostAndMessageModel($this->db_access);
@@ -975,6 +1020,38 @@ public function handle_clear_token(array $input): void{
             $result['message'],
             '',
             $result['error']
+        );
+    }
+
+    private function handle_update_post_media(array $input): void
+    {
+        $file_model = new FileModel($this->db_access);
+        $result = $file_model->update_post_media($input);
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            [
+                'media' => $result['media'] ?? null,
+                'post_id' => $result['post_id'] ?? null,
+            ]
+        );
+    }
+
+    private function handle_remove_media_from_post(array $input): void
+    {
+        $file_model = new FileModel($this->db_access);
+        $result = $file_model->remove_media_from_post($input);
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            [
+                'media_item_id' => $result['media_item_id'] ?? null,
+                'post_id' => $result['post_id'] ?? null,
+            ]
         );
     }
 
@@ -1022,6 +1099,89 @@ public function handle_clear_token(array $input): void{
             '',
             '',
             ['pages' => $pages]
+        );
+    }
+
+    private function handle_list_page_media(array $input): void
+    {
+        $model = new PostAndMessageModel($this->db_access);
+        $result = $model->list_page_media($input);
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            [
+                'media' => $result['media'] ?? [],
+                'page' => $result['page'] ?? null,
+            ]
+        );
+    }
+
+    private function handle_list_posts_admin(array $input): void
+    {
+        $model = new PostAndMessageModel($this->db_access);
+        $result = $model->list_posts_admin($input);
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['posts' => $result['posts']]
+        );
+    }
+
+    private function handle_list_media_items_admin(array $input): void
+    {
+        $file_model = new FileModel($this->db_access);
+        $result = $file_model->list_media_items_admin($input);
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['media' => $result['media']]
+        );
+    }
+
+    private function handle_list_page_posting_permissions(array $input): void
+    {
+        $model = new PostAndMessageModel($this->db_access);
+        $result = $model->list_page_posting_permissions($input);
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            [
+                'pages' => $result['pages'] ?? [],
+                'permissions' => $result['permissions'] ?? [],
+            ]
+        );
+    }
+
+    private function handle_add_page_posting_permission(array $input): void
+    {
+        $model = new PostAndMessageModel($this->db_access);
+        $result = $model->add_page_posting_permission($input);
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['permission' => $result['permission'] ?? null]
+        );
+    }
+
+    private function handle_remove_page_posting_permission(array $input): void
+    {
+        $model = new PostAndMessageModel($this->db_access);
+        $result = $model->remove_page_posting_permission($input);
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error']
         );
     }
 }
