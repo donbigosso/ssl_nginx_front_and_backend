@@ -113,6 +113,9 @@ class ApiMethods extends Core
                 case 'list_page_media':
                     $this->handle_list_page_media($input);
                     break;
+                case 'list_recent_changes':
+                    $this->handle_list_recent_changes();
+                    break;
                 case 'download':
                     $this->handle_download();
                     break;
@@ -222,6 +225,9 @@ class ApiMethods extends Core
                 case 'update_gallery_media':
                     $this->handle_update_gallery_media($input);
                     break;
+                case 'reorder_gallery_media':
+                    $this->handle_reorder_gallery_media($input);
+                    break;
                 case 'remove_media_from_gallery':
                     $this->handle_remove_media_from_gallery($input);
                     break;
@@ -266,6 +272,15 @@ class ApiMethods extends Core
                     break;
                 case 'remove_media_from_post':
                     $this->handle_remove_media_from_post($input);
+                    break;
+                case 'create_recent_change':
+                    $this->handle_create_recent_change($input);
+                    break;
+                case 'update_recent_change':
+                    $this->handle_update_recent_change($input);
+                    break;
+                case 'delete_recent_change':
+                    $this->handle_delete_recent_change($input);
                     break;
                 default:
                     $this->send_JSON_Response(false, "", "", "Unknown request: " . $input['request']);
@@ -739,6 +754,23 @@ public function handle_clear_token(array $input): void{
     }
 
     /**
+     * POST reorder_gallery_media — owner saves manual picture order.
+     * Body: token, gallery_id, order (array of media ids).
+     */
+    private function handle_reorder_gallery_media(array $input): void
+    {
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->reorder_gallery_media($input);
+
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error']
+        );
+    }
+
+    /**
      * POST remove_media_from_gallery — owner removes a picture from a gallery.
      * Body: token, gallery_id, media_id.
      */
@@ -946,6 +978,57 @@ public function handle_clear_token(array $input): void{
         
         $this->send_JSON_Response($success, $message, "", $error, []);
     }
+    private function handle_list_recent_changes(): void
+    {
+        $model = new RecentChangesModel($this->db_access);
+        $result = $model->list_recent_changes();
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['changes' => $result['changes']]
+        );
+    }
+
+    private function handle_create_recent_change(array $input): void
+    {
+        $model = new RecentChangesModel($this->db_access);
+        $result = $model->create_recent_change($input);
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['change' => $result['change']]
+        );
+    }
+
+    private function handle_update_recent_change(array $input): void
+    {
+        $model = new RecentChangesModel($this->db_access);
+        $result = $model->update_recent_change($input);
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error'],
+            ['change' => $result['change']]
+        );
+    }
+
+    private function handle_delete_recent_change(array $input): void
+    {
+        $model = new RecentChangesModel($this->db_access);
+        $result = $model->delete_recent_change($input);
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error']
+        );
+    }
+
     private function handle_create_contact_message(array $input): void
         {
             $model = new PostAndMessageModel($this->db_access);

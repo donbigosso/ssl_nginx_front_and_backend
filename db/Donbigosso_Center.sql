@@ -34,7 +34,7 @@ CREATE TABLE `contact_messages` (
   `sender_ip` varchar(45) DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `files`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -45,7 +45,7 @@ CREATE TABLE `files` (
   `date_added` datetime DEFAULT (now()),
   `size_in_kb` double DEFAULT NULL,
   PRIMARY KEY (`file_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=404 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=333 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `media_collections`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -57,7 +57,7 @@ CREATE TABLE `media_collections` (
   `register_date` datetime DEFAULT (now()),
   `collection_cover_id` int DEFAULT NULL,
   PRIMARY KEY (`media_collection_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `media_in_collection`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -65,6 +65,7 @@ DROP TABLE IF EXISTS `media_in_collection`;
 CREATE TABLE `media_in_collection` (
   `media_item_id` int NOT NULL,
   `media_collection_id` int NOT NULL,
+  `sort_order` int NOT NULL DEFAULT '0',
   `date_added` datetime DEFAULT (now()),
   PRIMARY KEY (`media_item_id`,`media_collection_id`),
   KEY `media_item_id_idx` (`media_item_id`),
@@ -100,7 +101,18 @@ CREATE TABLE `media_items` (
   PRIMARY KEY (`media_item_id`),
   KEY `media_file_ref` (`file_id`),
   CONSTRAINT `media_file_ref` FOREIGN KEY (`file_id`) REFERENCES `files` (`file_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=404 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=333 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `page_posting_permissions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `page_posting_permissions` (
+  `page` enum('TRIP','BLOG','ABOUT') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `user_id` int NOT NULL,
+  PRIMARY KEY (`page`,`user_id`),
+  KEY `fk_ppp_user_id` (`user_id`),
+  CONSTRAINT `fk_ppp_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `posts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -114,7 +126,29 @@ CREATE TABLE `posts` (
   PRIMARY KEY (`post_id`),
   KEY `posts_index_0` (`author_id`),
   CONSTRAINT `post_authors_ref` FOREIGN KEY (`author_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `posts_in_pages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `posts_in_pages` (
+  `post_id` int NOT NULL,
+  `page` enum('TRIP','BLOG','ABOUT') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  PRIMARY KEY (`post_id`,`page`),
+  KEY `fk_pip_post_id` (`post_id`),
+  CONSTRAINT `fk_pip_post_id` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `recent_changes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `recent_changes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `date` date NOT NULL,
+  `changes_made` varchar(500) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `recent_changes_date` (`date`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -131,7 +165,7 @@ CREATE TABLE `users` (
   `token_validity` datetime DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `name_UNIQUE` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
