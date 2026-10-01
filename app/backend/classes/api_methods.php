@@ -95,6 +95,9 @@ class ApiMethods extends Core
                 case 'get_gallery_media_item':
                     $this->handle_get_gallery_media_item($input);
                     break;
+                case 'download_gallery_media':
+                    $this->handle_download_gallery_media($input);
+                    break;
                 case 'get_gallery_cover_filename':
                     $this->handle_get_gallery_cover_filename($input);
                     break;
@@ -245,6 +248,9 @@ class ApiMethods extends Core
                     break;
                 case 'create_post':
                     $this->handle_create_post($input);
+                    break;
+                case 'reorder_page_posts':
+                    $this->handle_reorder_page_posts($input);
                     break;
                 case 'update_post':
                     $this->handle_update_post($input);
@@ -736,6 +742,32 @@ public function handle_clear_token(array $input): void{
     }
 
     /**
+     * GET download_gallery_media — stream a gallery picture as an attachment.
+     * Query: gallery_id (or id), media_id (or picid).
+     * File bytes are sent by GalleryModel::send_gallery_media_download.
+     */
+    private function handle_download_gallery_media(array $input): void
+    {
+        $galleryId = isset($input['gallery_id'])
+            ? (int)$input['gallery_id']
+            : (isset($input['id']) ? (int)$input['id'] : 0);
+        $mediaId = isset($input['media_id'])
+            ? (int)$input['media_id']
+            : (isset($input['picid']) ? (int)$input['picid'] : 0);
+
+        $gallery_model = new GalleryModel($this->db_access);
+        $result = $gallery_model->send_gallery_media_download($galleryId, $mediaId);
+
+        http_response_code(404);
+        $this->send_JSON_Response(
+            false,
+            '',
+            '',
+            $result['error'] !== '' ? $result['error'] : 'File not found.'
+        );
+    }
+
+    /**
      * POST update_gallery_media — owner updates picture title/description.
      * Body: token, gallery_id, media_id, optional title, description.
      */
@@ -1078,6 +1110,18 @@ public function handle_clear_token(array $input): void{
             '',
             $result['error'],
             ['post' => $result['post']]
+        );
+    }
+
+    private function handle_reorder_page_posts(array $input): void
+    {
+        $model = new PostAndMessageModel($this->db_access);
+        $result = $model->reorder_page_posts($input);
+        $this->send_JSON_Response(
+            $result['success'],
+            $result['message'],
+            '',
+            $result['error']
         );
     }
 
